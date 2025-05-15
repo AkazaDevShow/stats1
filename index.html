@@ -1,0 +1,32 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enter Password</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Enter Password</h1>
+    <input type="password" id="passwordInput" placeholder="Enter password" />
+    <button onclick="checkPassword()">Enter</button>
+  </div>
+  <script>
+    function checkPassword() {
+      const password = document.getElementById('passwordInput').value;
+
+      if (password === 'akazatime') {
+        localStorage.setItem('accessMode', 'full');  // full access: add/edit allowed
+        window.location.href = 'home.html';
+      } else if (password === 'Show') {
+        localStorage.setItem('accessMode', 'view');  // view only
+        window.location.href = 'home.html';
+      } else {
+        alert('Wrong password');
+      }
+    }
+  </script>
+</body>
+</html>

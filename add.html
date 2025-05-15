@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add to List</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>الصلاة</h1>
+
+    <div class="form-group">
+      <label for="select1">صلاة الصبح</label>
+      <select id="select1">
+        <option value="نعم">نعم</option>
+        <option value="لا">لا</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="select2">صلاة الظهر و العصر</label>
+      <select id="select2">
+        <option value="نعم">نعم</option>
+        <option value="لا">لا</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="select3">صلاة المغرب و العشاء</label>
+      <select id="select3">
+        <option value="نعم">نعم</option>
+        <option value="لا">لا</option>
+      </select>
+    </div>
+
+    <h1>اشياء اضافية</h1>
+
+    <div class="form-group">
+      <label for="select4">قراءة القران الكريم</label>
+      <select id="select4">
+        <option value="نعم">نعم</option>
+        <option value="لا">لا</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="select5">احتياط</label>
+      <select id="select5">
+        <option value="نعم">نعم</option>
+        <option value="لا">لا</option>
+      </select>
+    </div>
+
+    <button id="addBtn" onclick="addToList()">اضافة الى قائمة</button>
+    <br/><br/>
+    <button onclick="window.location.href='list.html'">رجوع</button>
+  </div>
+
+  <script>
+    const accessMode = localStorage.getItem('accessMode') || 'view'; // default to view
+
+    // Disable add button if in view-only mode
+    if (accessMode === 'view') {
+      const addBtn = document.getElementById('addBtn');
+      addBtn.disabled = true;
+      addBtn.style.opacity = '0.5';
+      addBtn.title = "غير مسموح بالاضافة في وضع العرض فقط"; // Tooltip: "Adding not allowed in view-only mode"
+    }
+
+    function addToList() {
+      if (accessMode === 'view') {
+        alert("عذراً، لا يمكنك الإضافة في وضع العرض فقط.");
+        return;
+      }
+
+      const select1 = document.getElementById('select1').value;
+      const select2 = document.getElementById('select2').value;
+      const select3 = document.getElementById('select3').value;
+      const select4 = document.getElementById('select4').value;
+      const select5 = document.getElementById('select5').value;
+      const now = new Date();
+      const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+      const time = now.toLocaleTimeString();
+
+      const entry = { select1, select2, select3, select4, select5, day, time };
+      const list = JSON.parse(localStorage.getItem('myList')) || [];
+      list.push(entry);
+      localStorage.setItem('myList', JSON.stringify(list));
+      window.location.href = 'list.html';
+    }
+  </script>
+</body>
+</html>

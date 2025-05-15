@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My List</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .entry {
+      margin-bottom: 15px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      position: relative;
+      direction: rtl;
+    }
+    .edit-btn, .save-btn, .cancel-btn {
+      margin-left: 10px;
+      font-size: 0.8em;
+      cursor: pointer;
+      padding: 2px 6px;
+      border: none;
+      border-radius: 3px;
+    }
+    .edit-btn {
+      background-color: #007bff;
+      color: white;
+    }
+    .save-btn {
+      background-color: #28a745;
+      color: white;
+    }
+    .cancel-btn {
+      background-color: #dc3545;
+      color: white;
+    }
+    .field-label {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>قائمة الدين</h1>
+    <div id="entries"></div>
+    <button id="addButton" onclick="window.location.href='add.html'">اضافة</button>
+    <br /><br />
+    <button onclick="window.location.href='home.html'">رجوع</button>
+  </div>
+  <script>
+    const accessMode = localStorage.getItem('accessMode') || 'view'; // default to view mode
+
+    // Hide Add button if in view mode
+    if (accessMode === 'view') {
+      document.getElementById('addButton').style.display = 'none';
+    }
+
+    const listContainer = document.getElementById('entries');
+    let items = JSON.parse(localStorage.getItem('myList')) || [];
+
+    // The possible options for selects — change as needed
+    const options = ['نعم', 'لا'];
+
+    function renderList() {
+      listContainer.innerHTML = '';
+
+      items.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'entry';
+
+        div.innerHTML = `
+          <div>
+            ${renderField('صلاة الصبح', 'select1', item.select1, index)}
+            ${renderField('صلاة الظهر و العصر', 'select2', item.select2, index)}
+            ${renderField('صلاة المغرب و العشاء', 'select3', item.select3, index)}
+            ${renderField('قراءة القران الكريم', 'select4', item.select4, index)}
+            ${renderField('احتياط', 'select5', item.select5, index)}
+            <small>${item.day}, ${item.time}</small>
+          </div>
+        `;
+
+        listContainer.appendChild(div);
+
+        // Add event listeners for each field's buttons
+        ['select1', 'select2', 'select3', 'select4', 'select5'].forEach(field => {
+          const editBtn = document.getElementById(`edit-btn-${field}-${index}`);
+          const saveBtn = document.getElementById(`save-btn-${field}-${index}`);
+          const cancelBtn = document.getElementById(`cancel-btn-${field}-${index}`);
+          const displaySpan = document.getElementById(`display-${field}-${index}`);
+          const editSelect = document.getElementById(`edit-select-${field}-${index}`);
+
+          // Hide buttons if in view mode
+          if (accessMode === 'view') {
+            editBtn.style.display = 'none';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+          } else {
+            editBtn.onclick = () => {
+              displaySpan.style.display = 'none';
+              editSelect.style.display = 'inline-block';
+              editBtn.style.display = 'none';
+              saveBtn.style.display = 'inline-block';
+              cancelBtn.style.display = 'inline-block';
+            };
+
+            saveBtn.onclick = () => {
+              const newValue = editSelect.value;
+              items[index][field] = newValue;
+              localStorage.setItem('myList', JSON.stringify(items));
+              renderList();
+            };
+
+            cancelBtn.onclick = () => {
+              renderList();
+            };
+          }
+        });
+      });
+    }
+
+    // Helper function to render each field with display + edit controls
+    function renderField(label, fieldName, value, index) {
+      return `
+        <p>
+          <span class="field-label">${label}:</span>
+          <span id="display-${fieldName}-${index}">${value}</span>
+          <select id="edit-select-${fieldName}-${index}" style="display:none;">
+            ${options.map(opt => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt}</option>`).join('')}
+          </select>
+
+          <button class="edit-btn" id="edit-btn-${fieldName}-${index}">تعديل</button>
+          <button class="save-btn" id="save-btn-${fieldName}-${index}" style="display:none;">حفظ</button>
+          <button class="cancel-btn" id="cancel-btn-${fieldName}-${index}" style="display:none;">إلغاء</button>
+        </p>
+      `;
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
+
+<!-- 
+<button onclick="resetList()">Reset List</button>
+
+<script>
+  function resetList() {
+    localStorage.removeItem('myList'); // or use .clear() to wipe all
+    alert("List has been reset.");
+    location.reload(); // refresh the page to update the display
+  }
+</script>
+
+-->

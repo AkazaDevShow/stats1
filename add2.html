@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add to List</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>كم من وقت لعبت</h1>
+
+    <div class="form-group">
+      <label for="select1">الوقت</label><br />
+      <select id="select1">
+        <option value="ساعة">ساعة</option>
+        <option value="ساعتين">ساعتين</option>
+        <option value="ثلاث ساعات">ثلاث ساعات</option>
+        <option value="اربع ساعات">اربع ساعات</option>
+      </select>
+    </div>
+
+    <button onclick="addToList()">اضافة الى قائمة</button>
+    <br /><br />
+    <button onclick="window.location.href='list2.html'">رجوع</button>
+  </div>
+
+  <script>
+    function addToList() {
+      const select1 = document.getElementById('select1').value;
+      const now = new Date();
+      const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+      const time = now.toLocaleTimeString();
+
+      const entry = { select1, day, time };
+      const list = JSON.parse(localStorage.getItem('myList2')) || [];
+      list.push(entry);
+      localStorage.setItem('myList2', JSON.stringify(list));  // Fixed typo here
+      window.location.href = 'list2.html';
+    }
+  </script>
+</body>
+</html>

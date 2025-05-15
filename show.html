@@ -1,0 +1,48 @@
+<!-- show.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>View List Only</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .entry {
+      margin-bottom: 15px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      direction: rtl;
+    }
+    .field-label {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>قائمة الدين - للعرض فقط</h1>
+    <div id="entries"></div>
+    <button onclick="window.location.href='index.html'">رجوع</button>
+  </div>
+
+  <script>
+    const listContainer = document.getElementById('entries');
+    const items = JSON.parse(localStorage.getItem('myList')) || [];
+
+    items.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'entry';
+      div.innerHTML = `
+        <p><span class="field-label">صلاة الصبح:</span> ${item.select1}</p>
+        <p><span class="field-label">صلاة الظهر و العصر:</span> ${item.select2}</p>
+        <p><span class="field-label">صلاة المغرب و العشاء:</span> ${item.select3}</p>
+        <p><span class="field-label">قراءة القران الكريم:</span> ${item.select4}</p>
+        <p><span class="field-label">احتياط:</span> ${item.select5}</p>
+        <small>${item.day}, ${item.time}</small>
+      `;
+      listContainer.appendChild(div);
+    });
+  </script>
+</body>
+</html>
