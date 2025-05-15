@@ -1,37 +1,14 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const list2Data = JSON.parse(localStorage.getItem('myList2')) || [];
-  const list1Data = JSON.parse(localStorage.getItem('myList')) || [];
+  // Load saved data or default
+  let list2Data = JSON.parse(localStorage.getItem('myList2')) || [];
+  let list1Data = JSON.parse(localStorage.getItem('myList')) || [];
   const accessMode = localStorage.getItem('accessMode') || 'view';
+
   const listArea = document.getElementById('listArea');
   const entriesArea = document.getElementById('entries');
 
-  // Handle "list2" (feedback log)
-  if (listArea) {
-    renderFeedbackList(list2Data);
-
-    const printButton = document.getElementById('printButton');
-    if (printButton) {
-      printButton.addEventListener('click', () => {
-        const select1 = document.getElementById('select1').value;
-
-        const now = new Date();
-        const time = now.toLocaleTimeString();
-        const day = now.toLocaleDateString(undefined, { weekday: 'long' });
-
-        const newEntry = {
-          select1,
-          time,
-          day
-        };
-
-        list2Data.push(newEntry);
-        localStorage.setItem('myList2', JSON.stringify(list2Data));
-        renderFeedbackList(list2Data);
-      });
-    }
-  }
-
-  // Handle "list1" (daily checklist with edit buttons)
+  // Render initial UI
+  if (listArea) renderFeedbackList(list2Data);
   if (entriesArea) {
     if (accessMode === 'view') {
       const addBtn = document.getElementById('addButton');
@@ -40,7 +17,25 @@ document.addEventListener('DOMContentLoaded', function () {
     renderChecklist(list1Data);
   }
 
-  // Optional Clear Button
+  // Setup print button for feedback log
+  const printButton = document.getElementById('printButton');
+  if (printButton) {
+    printButton.addEventListener('click', () => {
+      const select1 = document.getElementById('select1').value;
+
+      const now = new Date();
+      const time = now.toLocaleTimeString();
+      const day = now.toLocaleDateString(undefined, { weekday: 'long' });
+
+      const newEntry = { select1, time, day };
+      list2Data.push(newEntry);
+      localStorage.setItem('myList2', JSON.stringify(list2Data));
+      console.log('Saved myList2:', list2Data);
+      renderFeedbackList(list2Data);
+    });
+  }
+
+  // Setup clear button to clear all data
   const clearBtn = document.getElementById('clearData');
   if (clearBtn) {
     clearBtn.addEventListener('click', () => {
@@ -51,8 +46,52 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Functions
+  // Event delegation for checklist buttons (edit, save, cancel)
+  if (entriesArea) {
+    entriesArea.addEventListener('click', (e) => {
+      if (accessMode === 'view') return; // no edits allowed in view mode
+
+      // Extract info from button id
+      const target = e.target;
+      if (!target.id) return;
+
+      // Pattern: action-btn-field-index e.g. edit-btn-select1-0
+      const match = target.id.match(/^(edit|save|cancel)-btn-(select[1-5])-(\d+)$/);
+      if (!match) return;
+
+      const [_, action, field, indexStr] = match;
+      const index = parseInt(indexStr, 10);
+
+      // Find related elements by id
+      const displaySpan = document.getElementById(`display-${field}-${index}`);
+      const editSelect = document.getElementById(`edit-select-${field}-${index}`);
+      const editBtn = document.getElementById(`edit-btn-${field}-${index}`);
+      const saveBtn = document.getElementById(`save-btn-${field}-${index}`);
+      const cancelBtn = document.getElementById(`cancel-btn-${field}-${index}`);
+
+      if (!displaySpan || !editSelect || !editBtn || !saveBtn || !cancelBtn) return;
+
+      if (action === 'edit') {
+        displaySpan.style.display = 'none';
+        editSelect.style.display = 'inline-block';
+        editBtn.style.display = 'none';
+        saveBtn.style.display = 'inline-block';
+        cancelBtn.style.display = 'inline-block';
+      } else if (action === 'save') {
+        const newValue = editSelect.value;
+        list1Data[index][field] = newValue;
+        localStorage.setItem('myList', JSON.stringify(list1Data));
+        console.log('Saved myList:', list1Data);
+        renderChecklist(list1Data);
+      } else if (action === 'cancel') {
+        renderChecklist(list1Data);
+      }
+    });
+  }
+
+  // Render feedback list (list2Data)
   function renderFeedbackList(data) {
+    if (!listArea) return;
     listArea.innerHTML = '';
     data.forEach(item => {
       const entry = document.createElement('div');
@@ -65,7 +104,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // Render checklist with edit buttons (list1Data)
   function renderChecklist(items) {
+    if (!entriesArea) return;
     entriesArea.innerHTML = '';
     const options = ['نعم', 'لا'];
 
@@ -73,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const div = document.createElement('div');
       div.className = 'entry';
 
+      // Build the HTML for the entry fields with buttons
       div.innerHTML = `
         <div>
           ${renderField('صلاة الصبح', 'select1', item.select1, index)}
@@ -86,38 +128,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
       entriesArea.appendChild(div);
 
-      ['select1', 'select2', 'select3', 'select4', 'select5'].forEach(field => {
-        const editBtn = document.getElementById(`edit-btn-${field}-${index}`);
-        const saveBtn = document.getElementById(`save-btn-${field}-${index}`);
-        const cancelBtn = document.getElementById(`cancel-btn-${field}-${index}`);
-        const displaySpan = document.getElementById(`display-${field}-${index}`);
-        const editSelect = document.getElementById(`edit-select-${field}-${index}`);
+      // Hide buttons if in view mode
+      if (accessMode === 'view') {
+        ['select1', 'select2', 'select3', 'select4', 'select5'].forEach(field => {
+          const editBtn = document.getElementById(`edit-btn-${field}-${index}`);
+          const saveBtn = document.getElementById(`save-btn-${field}-${index}`);
+          const cancelBtn = document.getElementById(`cancel-btn-${field}-${index}`);
 
-        if (accessMode === 'view') {
-          editBtn.style.display = 'none';
-          saveBtn.style.display = 'none';
-          cancelBtn.style.display = 'none';
-        } else {
-          editBtn.onclick = () => {
-            displaySpan.style.display = 'none';
-            editSelect.style.display = 'inline-block';
-            editBtn.style.display = 'none';
-            saveBtn.style.display = 'inline-block';
-            cancelBtn.style.display = 'inline-block';
-          };
-
-          saveBtn.onclick = () => {
-            const newValue = editSelect.value;
-            items[index][field] = newValue;
-            localStorage.setItem('myList', JSON.stringify(items));
-            renderChecklist(items);
-          };
-
-          cancelBtn.onclick = () => {
-            renderChecklist(items);
-          };
-        }
-      });
+          if (editBtn) editBtn.style.display = 'none';
+          if (saveBtn) saveBtn.style.display = 'none';
+          if (cancelBtn) cancelBtn.style.display = 'none';
+        });
+      }
     });
 
     function renderField(label, fieldName, value, index) {
